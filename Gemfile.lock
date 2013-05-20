@@ -1,0 +1,54 @@
+PATH
+  remote: ../chatroom-models
+  specs:
+    chatroom-models (0.0.1)
+      ohm
+      ohm-identity_map
+
+GEM
+  remote: http://ruby.taobao.org/
+  specs:
+    daemons (1.1.9)
+    em-synchrony (1.0.3)
+      eventmachine (>= 1.0.0.beta.1)
+    eventmachine (1.0.3)
+    faye-websocket (0.4.7)
+      eventmachine (>= 0.12.0)
+    json (1.7.7)
+    multi_json (1.7.3)
+    nest (1.1.2)
+      redis
+    ohm (1.3.2)
+      nest (~> 1.0)
+      redis
+      scrivener (~> 0.0.3)
+    ohm-identity_map (0.1.1)
+    rack (1.5.2)
+    rack-mount (0.8.3)
+      rack (>= 1.0.0)
+    redis (3.0.4)
+    regin (0.3.8)
+    scrivener (0.0.3)
+    sockjs (0.2.1)
+      faye-websocket (~> 0.4.3)
+      json
+      rack
+      rack-mount (~> 0.8.3)
+      regin (~> 0.3.8)
+      thin
+    thin (1.5.1)
+      daemons (>= 1.0.9)
+      eventmachine (>= 0.12.6)
+      rack (>= 1.0.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  chatroom-models!
+  em-synchrony
+  eventmachine
+  json (~> 1.7.7)
+  multi_json
+  sockjs
+  thin
