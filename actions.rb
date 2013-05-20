@@ -18,8 +18,9 @@ module Chatroom
 			end      
     end
 
-    def join(room)
-    	Room.with(:name, room).join(user)
+    def join(room_name)
+    	room = Room.with(:name, room_name) || Room.create(name: room_name)
+      room.join(user)
     end
 	end
 end
