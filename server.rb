@@ -51,7 +51,7 @@ module Chatroom
 		rescue 
 			puts $!.message
 			puts $!.backtrace.join("\n")
-			send_data error: 'fatal error'
+			send_data error: 'unknown error'
 		end
 
 		def send_data(*messages)
@@ -70,43 +70,6 @@ module Chatroom
 			end
 		end
 	end
-end
-
-
-
-class ChatApp
-  def call(env)
-    body = <<-body
-    <html>
-    <head>
-    <title>aaaaaa</title>
-    </head>
-    <body>
-<script src="http://cdn.sockjs.org/sockjs-0.2.1.min.js"></script>
-
-<script>
-  var sock = new SockJS(window.location.href+"chat");
-
-  sock.onopen = function() {
-    console.log("open");
-  };
-
-  sock.onmessage = function(e) {
-    console.log("message", e.data);
-  };
-
-  sock.onclose = function() {
-    console.log("close");
-  };
-</script> </body></html>   
-    body
-    headers = {
-      "Content-Type" => "text/html; charset=UTF-8",
-      "Content-Length" => body.bytesize.to_s
-    }
-
-    [200, headers, [body]]
-  end
 end
 
 
@@ -146,8 +109,14 @@ irb_t = Thread.new {
 app = ::Rack::Builder.new do
   map '/chat' do
     run ::Rack::SockJS.new(Chatroom::ChatSession)
-  end
-  run ChatApp.new
+  end  
+  public_dir = File.expand_path('public')
+  use Rack::Static, 
+    :urls => [""],
+    :root => public_dir,
+    :index => 'index.html'
+
+  run Rack::File.new(public_dir)
 end
 
 EM.synchrony {

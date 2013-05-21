@@ -1,0 +1,43 @@
+    <html>
+    <head>
+
+    <title>aaaaaa</title>
+    </head>
+    <body>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="agility.min.js"></script>
+<script src="http://cdn.sockjs.org/sockjs-0.2.1.min.js"></script>
+
+
+<script>
+
+  var chat = $$({}, '<li><span data-bind="content" /></li>', '', {
+
+  })
+
+  var room = $$({
+    view: {
+      format: '<div><h2>chatroom</h2><ul></ul><input type="text">  <button id="send">send</button></div> '
+    } ,
+    controller: {
+        'click button': function(event){
+          $(event.target).prop('disabled', true)
+         }
+    }
+  });
+  $$.document.append(room);
+  var sock = new SockJS(window.location.href+"chat");
+
+  sock.onopen = function() {
+    console.log("open");
+  };
+
+  sock.onmessage = function(e) {
+    console.log("message", e.data);
+  };
+
+  sock.onclose = function() {
+    console.log("close");
+  };
+</script> </body></html>   
