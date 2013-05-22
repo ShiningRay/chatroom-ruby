@@ -28,7 +28,9 @@ module Chatroom
 		end
 
 		def opened
-			
+			puts 'opened'
+      p user
+      p user_action
 		end
 
 		def process_message(message)
@@ -43,7 +45,11 @@ module Chatroom
 			else
 				if data['action'] == 'auth'
 					auth data['login'], data['name'], ''
-					send_data error: 'login failed' unless logged_in?
+          if logged_in?
+            send_data info: 'logged_in'
+          else
+            send_data error: 'login failed' 
+          end
 				else
 					send_data error: 'please login first'
 				end
@@ -55,11 +61,17 @@ module Chatroom
 		end
 
 		def send_data(*messages)
+      p transport      
+      p current_state
+      p messages
+
 			send(*messages.collect{|i|MultiJson.dump(i)})
 		end
 
 		def on_close
+      puts 'closed'
 			user_action.quit
+      user.connection = nil
 		end
 
 		def auth(login, name, token)

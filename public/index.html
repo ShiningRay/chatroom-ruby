@@ -7,37 +7,107 @@
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type="text/javascript" src="agility.min.js"></script>
+<script type="text/javascript" src="EventEmitter.js"></script>
 <script src="http://cdn.sockjs.org/sockjs-0.2.1.min.js"></script>
 
 
 <script>
+  $.extend(SockJS.prototype, EventEmitter.prototype)
+  var sock = new SockJS(window.location.href+"chat");
+  sock.onopen = function() {
+    console.log("open");
+    this.emit('open')
+  };
 
-  var chat = $$({}, '<li><span data-bind="content" /></li>', '', {
+  sock.onmessage = function(e) {
+    console.log("message", e.data);
+    this.emit('data', JSON.parse(e.data))
+  };
+
+  sock.onclose = function() {
+    this.emit('close')
+  };
+  sock.send_data = function(data){
+    this.send(JSON.stringify(data))
+  } 
+  var chat = $$({login:'', content: ''},
+   '<li>\
+   <span data-bind="login" class="login" />\
+   <span data-bind="content" class="content" />\
+   </li>', 
+   '& { \
+    list-style: none; \
+   } \
+    & .login { \
+    margin-right: 10px; \
+   } \
+    ', {
 
   })
 
   var room = $$({
     view: {
-      format: '<div><h2>chatroom</h2><ul></ul><input type="text">  <button id="send">send</button></div> '
+      format: '<div><h2 data-bind="name"></h2><ul></ul><input type="text" id="content"><button id="send">send</button></div> '
     } ,
     controller: {
-        'click button': function(event){
-          $(event.target).prop('disabled', true)
-         }
+      'add': function(){
+        console.debug('added')
+        var self = this;
+        sock.on('data', function(data){
+          console.log('data')
+          if(data.event == 'say'){
+            self.append($$(chat, {login: data.source, content: data.data}), 'ul');
+          }
+        })
+      },
+      'click button': function(event){
+          var c = $.trim(this.view.$('#content').val());
+          if(c.length > 0)
+            say(c)
+       }
     }
   });
-  $$.document.append(room);
-  var sock = new SockJS(window.location.href+"chat");
 
-  sock.onopen = function() {
-    console.log("open");
-  };
+  var rooms = $$({'room_name':''}, '<div><h1>select room</h1><input type="text" id="room_name" data-bind="room_name"><button>Join</button></div>',
+  {
+    'click button': function(){
 
-  sock.onmessage = function(e) {
-    console.log("message", e.data);
-  };
+      sock.send_data({action: 'join', data: this.model.get('room_name')})
+      var self=this;
+      wait_for_response(function(){
+        $$.document.append(room);
+        self.destroy()
+      })
+      
+    }
+  })
+var login = $$({login:''}, '<div><input type="text" id="login" data-bind="login"><button>login</button>', {
+  'click button' : function(){
+    var name = this.model.get('login');
+    sock.send_data({action: 'auth', login: name, name: name})
+    var self = this;
+    wait_for_response(function(){
+      $$.document.append(rooms);
+      self.destroy();
+    })
+  }
+})
 
-  sock.onclose = function() {
-    console.log("close");
-  };
+
+
+  $$.document.append(login)
+
+
+function say(content){
+  sock.send_data({action: 'say', data: content})
+}
+
+function wait_for_response(callback){
+  sock.addEventListener('message', callback, true)
+}
+
+function receive_data(data){
+
+}
+
 </script> </body></html>   

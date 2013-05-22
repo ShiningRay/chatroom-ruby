@@ -13,7 +13,6 @@ module Chatroom
 
     def quit
       user.room.leave(self) if user.room
-      #user.connection.close
     end
 
     def say(data)
