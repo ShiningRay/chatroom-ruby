@@ -61,18 +61,31 @@ module Chatroom
 		end
 
 		def send_data(*messages)
-      p transport      
-      p current_state
-      p messages
-
 			send(*messages.collect{|i|MultiJson.dump(i)})
 		end
 
-		def on_close
-      puts 'closed'
-			user_action.quit
-      user.connection = nil
-		end
+    #patch
+    def close(status=3000, message="Go away")
+      #puts "alive? #{alive?}"
+      super
+    end
+    #another patch
+    def set_close_timer
+      set_timer(:close, EM::Timer, @disconnect_delay) do
+        @alive = false
+        after_close
+      end
+    end
+		# def after_app_run
+  #     puts "alive? #{alive?}"
+  #     puts "state? #{current_state}"
+		# end
+
+
+
+    def after_close
+      puts 'test close'
+    end
 
 		def auth(login, name, token)
 			self.user = User.with(:login, login) || User.create( login: login, name: name)
@@ -132,6 +145,7 @@ app = ::Rack::Builder.new do
 end
 
 EM.synchrony {
+  SockJS.debug!
 	thin = Rack::Handler.get('thin')
 	thin.run(app.to_app, Port: 10000)
   Signal.trap("INT")  { EventMachine.stop }

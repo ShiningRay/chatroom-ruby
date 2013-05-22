@@ -26,6 +26,11 @@
 
   sock.onclose = function() {
     this.emit('close')
+    alert('close');
+  };
+  window.onbeforeunload = function(){
+    sock.onclose = function () {};
+    sock.close();
   };
   sock.send_data = function(data){
     this.send(JSON.stringify(data))
@@ -50,7 +55,7 @@
       format: '<div><h2 data-bind="name"></h2><ul></ul><input type="text" id="content"><button id="send">send</button></div> '
     } ,
     controller: {
-      'add': function(){
+      'create': function(){
         console.debug('added')
         var self = this;
         sock.on('data', function(data){
