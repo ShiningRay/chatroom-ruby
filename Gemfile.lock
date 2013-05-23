@@ -1,3 +1,17 @@
+GIT
+  remote: git://github.com/cosm/sockjs-ruby.git
+  revision: 51e5233b7ea53b5db160d615ef848420d928a79e
+  specs:
+    sockjs (0.2.1.beta.2)
+      faye-websocket (~> 0.4.3)
+      json
+      multi_json (>= 1.3.6)
+      oj (>= 2.0.12)
+      rack
+      rack-mount (~> 0.8.3)
+      regin (~> 0.3.8)
+      thin
+
 PATH
   remote: ../chatroom-models
   specs:
@@ -24,19 +38,13 @@ GEM
       redis
       scrivener (~> 0.0.3)
     ohm-identity_map (0.1.1)
+    oj (2.0.13)
     rack (1.5.2)
     rack-mount (0.8.3)
       rack (>= 1.0.0)
     redis (3.0.4)
     regin (0.3.8)
     scrivener (0.0.3)
-    sockjs (0.2.1)
-      faye-websocket (~> 0.4.3)
-      json
-      rack
-      rack-mount (~> 0.8.3)
-      regin (~> 0.3.8)
-      thin
     thin (1.5.1)
       daemons (>= 1.0.9)
       eventmachine (>= 0.12.6)
@@ -52,5 +60,5 @@ DEPENDENCIES
   eventmachine
   json (~> 1.7.7)
   multi_json
-  sockjs
+  sockjs!
   thin

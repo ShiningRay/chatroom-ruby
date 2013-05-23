@@ -21,7 +21,7 @@ require 'actions'
 
 module Chatroom
 	class ChatSession < SockJS::Session
-		attr_accessor :user, :user_action, :subscription
+		attr_accessor :user, :user_action
 
 		def logged_in?
 			!!user
@@ -29,8 +29,6 @@ module Chatroom
 
 		def opened
 			puts 'opened'
-      p user
-      p user_action
 		end
 
 		def process_message(message)
@@ -66,25 +64,22 @@ module Chatroom
 
     #patch
     def close(status=3000, message="Go away")
-      #puts "alive? #{alive?}"
+      puts "alive? #{alive?}" rescue nil
       super
     end
     #another patch
-    def set_close_timer
-      set_timer(:close, EM::Timer, @disconnect_delay) do
-        @alive = false
-        after_close
-      end
-    end
+
 		# def after_app_run
   #     puts "alive? #{alive?}"
   #     puts "state? #{current_state}"
 		# end
 
-
-
-    def after_close
-      puts 'test close'
+    def on_close
+      puts "#{user.name} closed connection" rescue nil
+      user_action.quit
+      if user.connection && user.connection === self
+        user.connection = nil
+      end
     end
 
 		def auth(login, name, token)
@@ -145,6 +140,7 @@ app = ::Rack::Builder.new do
 end
 
 EM.synchrony {
+  Ohm.connect :driver => :synchrony unless RUBY_PLATFORM =~ /mingw/
   SockJS.debug!
 	thin = Rack::Handler.get('thin')
 	thin.run(app.to_app, Port: 10000)

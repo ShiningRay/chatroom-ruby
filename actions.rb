@@ -12,7 +12,7 @@ module Chatroom
 		end
 
     def quit
-      user.room.leave(self) if user.room
+      user.room.leave(user) if user.room
     end
 
     def say(data)

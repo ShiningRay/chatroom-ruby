@@ -21,7 +21,11 @@
 
   sock.onmessage = function(e) {
     console.log("message", e.data);
-    this.emit('data', JSON.parse(e.data))
+    var data = JSON.parse(e.data);
+    this.emit('data', data);
+    if(data.event){
+      this.emit(data.event, data);
+    }
   };
 
   sock.onclose = function() {
@@ -50,25 +54,56 @@
 
   })
 
+  var user_tmpl = $$({}, '<li><span data-bind="login"/></li>')
+
+  var users_list = $$({
+    model: {users:{}},
+    view: {
+      format: '<div><ul></ul></div>'
+    },
+    add_user: function(name){
+      var user = $$(user_tmpl, {login: name})
+      this.model.get('users')[name] = user
+      this.append(user, 'ul')
+    },
+    remove_user: function(name){
+      var users = this.model.get('users')
+      var user = users[name];
+      if(!user){return}
+      delete users[name];
+      user.destroy();
+    }
+  })
+
   var room = $$({
     view: {
-      format: '<div><h2 data-bind="name"></h2><ul></ul><input type="text" id="content"><button id="send">send</button></div> '
+      format: '<div><h2 data-bind="name"></h2><ul id="chats"></ul><input type="text" id="content"><button id="send">send</button></div> '
     } ,
     controller: {
       'create': function(){
-        console.debug('added')
         var self = this;
         sock.on('data', function(data){
           console.log('data')
-          if(data.event == 'say'){
-            self.append($$(chat, {login: data.source, content: data.data}), 'ul');
+          if(data.event){
+            self.trigger(data.event, data)
           }
-        })
+        });
+        this.append(users_list);
+
       },
       'click button': function(event){
           var c = $.trim(this.view.$('#content').val());
           if(c.length > 0)
             say(c)
+       },
+       'say': function(event, data){
+          this.append($$(chat, {login: data.source, content: data.data}), '#chats');
+       },
+       'leave': function(event, data){
+         users_list.remove_user(data.source)
+       },
+       'join': function(event, data){
+        users_list.add_user(data.source)
        }
     }
   });
@@ -86,6 +121,10 @@
       
     }
   })
+
+  sock.on('joined', function(data){
+    room.model.set({'name': data.room});
+  })
 var login = $$({login:''}, '<div><input type="text" id="login" data-bind="login"><button>login</button>', {
   'click button' : function(){
     var name = this.model.get('login');
@@ -98,10 +137,7 @@ var login = $$({login:''}, '<div><input type="text" id="login" data-bind="login"
   }
 })
 
-
-
   $$.document.append(login)
-
 
 function say(content){
   sock.send_data({action: 'say', data: content})
