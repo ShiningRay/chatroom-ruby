@@ -1,46 +1,50 @@
     <html>
     <head>
 
-    <title>aaaaaa</title>
-    </head>
-    <body>
+    <title>chatroom</title>
+    <style>
+    body, div, ul, li {
+      margin:0;
+      padding:0;
+    }
+    ul {
+      list-style: none;
+    }
+    #chatroom{
+      position: relative;
+      height: 100%;
+      width: 100%;
+    }
+    #chatroom #inputs{
+      position: absolute;
+      left: 0;
+      bottom: 0;
+    }
+    #chats {
+      position: absolute;
+      top: 30px;
+      left: 0;
+      right: 0;
+      bottom: 30px;
+      overflow: scroll;
+    }
+    .chat {
 
+    }
+    .user {
+      font-size: 10px;
+    }
+    </style>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type="text/javascript" src="agility.min.js"></script>
 <script type="text/javascript" src="EventEmitter.js"></script>
 <script src="http://cdn.sockjs.org/sockjs-0.2.1.min.js"></script>
-
-
+<script type="text/javascript" src="conn.js"></script>    
+    </head>
+    <body>
 <script>
-  $.extend(SockJS.prototype, EventEmitter.prototype)
-  var sock = new SockJS(window.location.href+"chat");
-  sock.onopen = function() {
-    console.log("open");
-    this.emit('open')
-  };
-
-  sock.onmessage = function(e) {
-    console.log("message", e.data);
-    var data = JSON.parse(e.data);
-    this.emit('data', data);
-    if(data.event){
-      this.emit(data.event, data);
-    }
-  };
-
-  sock.onclose = function() {
-    this.emit('close')
-    alert('close');
-  };
-  window.onbeforeunload = function(){
-    sock.onclose = function () {};
-    sock.close();
-  };
-  sock.send_data = function(data){
-    this.send(JSON.stringify(data))
-  } 
   var chat = $$({login:'', content: ''},
-   '<li>\
+   '<li class="chat">\
    <span data-bind="login" class="login" />\
    <span data-bind="content" class="content" />\
    </li>', 
@@ -51,15 +55,17 @@
     margin-right: 10px; \
    } \
     ', {
-
+      'add': function(){
+        console.log('added')
+      }
   })
 
-  var user_tmpl = $$({}, '<li><span data-bind="login"/></li>')
+  var user_tmpl = $$({}, '<li class="user"><span data-bind="login"/></li>')
 
   var users_list = $$({
     model: {users:{}},
     view: {
-      format: '<div><ul></ul></div>'
+      format: '<div id="user_list"><ul></ul></div>'
     },
     add_user: function(name){
       var user = $$(user_tmpl, {login: name})
@@ -77,7 +83,14 @@
 
   var room = $$({
     view: {
-      format: '<div><h2 data-bind="name"></h2><ul id="chats"></ul><input type="text" id="content"><button id="send">send</button></div> '
+      format: '<div id="chatroom">\
+      <h2 data-bind="name"></h2>\
+      <ul id="chats"></ul>\
+      <div id="inputs">\
+      <input type="text" id="content">\
+      <button id="send">send</button>\
+      </div>\
+      </div>'
     } ,
     controller: {
       'create': function(){
@@ -90,6 +103,9 @@
         });
         this.append(users_list);
 
+      },
+      'add': function(){
+        console.debug(arguments)
       },
       'click button': function(event){
           var c = $.trim(this.view.$('#content').val());
@@ -108,7 +124,9 @@
     }
   });
 
-  var rooms = $$({'room_name':''}, '<div><h1>select room</h1><input type="text" id="room_name" data-bind="room_name"><button>Join</button></div>',
+  var rooms = $$({'room_name':''}, '<div>\
+    <h1>select room</h1>\
+    <input type="text" id="room_name" data-bind="room_name"><button>Join</button></div>',
   {
     'click button': function(){
 
@@ -151,4 +169,10 @@ function receive_data(data){
 
 }
 
-</script> </body></html>   
+</script> 
+
+
+
+
+</body>
+</html>   
