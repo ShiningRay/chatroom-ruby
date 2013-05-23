@@ -24,15 +24,23 @@
       position: absolute;
       top: 30px;
       left: 0;
-      right: 0;
+      right: 60px;
       bottom: 30px;
-      overflow: scroll;
+      overflow: auto;
     }
     .chat {
 
     }
     .user {
       font-size: 10px;
+    }
+    #user_list {
+      position: absolute;
+      right: 0px;
+      width: 60px;
+      top: 0px;
+      bottom: 30px;
+      overflow: auto;
     }
     </style>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
@@ -59,13 +67,18 @@
         console.log('added')
       }
   })
-
-  var user_tmpl = $$({}, '<li class="user"><span data-bind="login"/></li>')
+var current_user, user_tmpl;
+current_user = user_tmpl = $$({}, '<li class="user"><span data-bind="login"/></li>')
 
   var users_list = $$({
     model: {users:{}},
     view: {
       format: '<div id="user_list"><ul></ul></div>'
+    },
+    controller: {
+      'create': function(){
+        this.append(current_user, 'ul');
+      }
     },
     add_user: function(name){
       var user = $$(user_tmpl, {login: name})
@@ -101,8 +114,8 @@
             self.trigger(data.event, data)
           }
         });
+  
         this.append(users_list);
-
       },
       'add': function(){
         console.debug(arguments)
@@ -142,6 +155,10 @@
 
   sock.on('joined', function(data){
     room.model.set({'name': data.room});
+  })
+  sock.on('logged_in', function(data){
+    console.log(data);
+    current_user.model.set({login: data.data});
   })
 var login = $$({login:''}, '<div><input type="text" id="login" data-bind="login"><button>login</button>', {
   'click button' : function(){

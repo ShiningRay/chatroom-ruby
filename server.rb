@@ -44,7 +44,7 @@ module Chatroom
 				if data['action'] == 'auth'
 					auth data['login'], data['name'], ''
           if logged_in?
-            send_data info: 'logged_in'
+            send_data event: 'logged_in', data: user.login
           else
             send_data error: 'login failed' 
           end
